@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Home</title>
+        <link rel="stylesheet" href="styles.css">
+        <script>
+            let isLoggedin = false
+            async function signup() {
+                const username = document.getElementById('username').value
+                const password = document.getElementById('password').value
+                console.log(username, password);
+                
+                if(username == "" || password == "") {
+                    alert("Plese enter all details")
+                } else {
+                    const response = await fetch(
+                        "/signup_request",
+                        {
+                            method: "post",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({ username: username, password })
+                        }
+                    )
+
+                    if(response.ok) {
+                        let data = await response.json()
+                        if(data.result == "success") {
+                            reloadSideBar(username)
+                            isLoggedin = true
+                        }
+                    }
+                }
+                
+            }
+            
+            async function login() {
+                const username = document.getElementById('username').value
+                const password = document.getElementById('password').value
+
+                console.log(username, password);
+                
+                
+                if(username == "" || password == "") {
+                    alert("Plese enter all details")
+                } else {
+                    const response = await fetch(
+                        "/login_request",
+                        {
+                            method: "post",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({ username: username, password })
+                        }
+                    )
+
+                    if(response.ok) {
+                        const json = await response.json()
+                        
+                        if(json.result == "success") {
+                            reloadSideBar(username)
+                            isLoggedin = true
+                        }
+                        
+                    }
+                }
+            }
+            
+            async function logout() {
+                const response = await fetch("/logout_request")
+                if(response.ok) {
+                    isLoggedin = false
+                    document.getElementById("new-post").disabled = true
+                }
+                reloadSideBar()
+            }
+        </script>
+    </head>
+    <body>
+        <div id="main">
+            <header>
+                <h1>MY FORUM</h1>
+            </header>
+            <main>
+                <h2>Active forums: <button id="new-forum" onclick="newForum()">+</button></h2>
+                <div id="forum-list"></div>
+                <h2>Posts: <button id="new-post" onclick="newPost()" disabled>+</button></h2>
+                <div id="post-list"></div>
+                <script>
+                    async function updateForumList() {
+                        const response = await fetch("/forum-list")
+                        if(response.ok) {
+                            let data = await response.json()
+                            document.getElementById("forum-list")
+                              .innerHTML = data.elements;
+                            
+                            for(const elem of document.getElementsByClassName("forum-item")) {
+                                elem.addEventListener("click", function (e) {
+                                    const id = elem.id
+
+                                    for(const others of document.getElementsByClassName("forum-item")) {
+                                        others.classList.remove("selected")
+                                    }
+                                    elem.classList.add("selected")
+
+                                    updatePosts(id)
+                                })
+                            }  
+                        }
+                    }
+                    updateForumList()
+
+                    let displayedForum;
+                    async function updatePosts(forumid) {
+                        if(isLoggedin)
+                            document.getElementById("new-post").disabled = false
+
+                        displayedForum = forumid
+                        const response = await fetch(`/forum/${forumid}`)
+                        if(response.ok) {
+                            const data = await response.json()
+
+                            document.getElementById("post-list").innerHTML = data.elements
+                        }
+                    }
+
+                    async function newForum() {
+                        const newname = prompt("Ener the name of your forum: ")
+
+                        if(!newname) return
+                        const response = await fetch("/new-forum", {
+                            method: "post",
+                            headers: {
+                                'Content-Type': "application/json"
+                            },
+                            body: JSON.stringify({
+                                name: newname
+                            })
+                        })
+
+                        if(response.ok) {
+                            updateForumList()
+                        }
+                    }
+                    
+                    async function newPost() {
+                        const newpost = prompt("Ener the message for your post: ")
+    
+                        if(!newpost) return
+                        const response = await fetch("/new-post", {
+                            method: "post",
+                            headers: {
+                                'Content-Type': "application/json"
+                            },
+                            body: JSON.stringify({
+                                message: newpost,
+                                forum: displayedForum
+                            })
+                        })
+    
+                        if(response.ok) {
+                            updatePosts(displayedForum)
+                        }
+                    }
+                </script>
+            </main>
+        </div>
+        <div id="side">
+            <div id="loggedin" class="user-login">
+                <span id="displayname"></span>
+                <button id="logout" onclick="logout()">Logout</button>
+            </div>
+            <div id="loggedout" class="user-login">
+                <span>Username:</span>
+                <input type="text" id="username">
+                <span>Password:</span>
+                <input type="password" id="password">
+                <br>
+                <button id="signup" onclick="signup()">Signup</button>
+                <button id="login" onclick="login()">Login</button>
+            </div>
+            <script>
+                async function reloadSideBar(username) {
+                    if(username) {
+
+                    } else {     
+                        const response = await fetch("/pageload", {
+                            headers: { "Content-Type": "application/json" }
+                        })
+                        const json = await response.json()
+                    }
+                    
+                    if(username) {
+                        loggedin.style.display = "flex"
+                        loggedout.style.display = "none"
+                        document.getElementById("displayname").innerText = username
+                        
+                    } else {
+                        loggedout.style.display = "flex"
+                        loggedin.style.display = "none"
+                    }
+                }
+                reloadSideBar()
+            </script>
+        </div>
+    </body>
+</html>
