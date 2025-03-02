@@ -20,15 +20,15 @@ A simple forum application built using **Node.js** and **MongoDB** as part of a 
 
 ```
 📦 forum-app
-├── 📂 public          # Frontend (HTML, CSS, JavaScript)
-     ├── 📄 index.html
-     ├── 📄 styles.html
-├── 📂 server          # Backend (Node.js + Express)
-     ├── 📄 server.js  # Main server file
-     ├── 📄 mongoClient.js  # MongoDB connection logic
-├── 📄 .env            # Environment variables
-├── 📄 package.json    # Project dependencies
-└── 📄 README.md       # Project documentation
+├── 📂 public              # Frontend (HTML, CSS, JavaScript)
+|    ├── 📄 index.html     # The main page
+|    ├── 📄 styles.html    # The stylesheet
+├── 📂 server              # Backend (Node.js + Express)
+|    ├── 📄 server.js      # Main server file
+|    ├── 📄 mongoClient.js # MongoDB connection logic
+├── 📄 .env                # Environment variables
+├── 📄 package.json        # Project dependencies
+└── 📄 README.md           # Project documentation
 ```
 
 ## 🏗️ API Endpoints
